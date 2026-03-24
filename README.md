@@ -3,7 +3,7 @@
 # MDCx Docker
 
 
-📢 上游源码项目已更改为 [Hazard804/mdcx](https://github.com/Hazard804/mdcx)。
+📢 上游源码项目已更改为 [sqzw-x/mdcx](https://github.com/sqzw-x/mdcx)。
 
 👉🏻 如果您当前使用的是`20231014`或之前的版本，请阅读 [更改新源码后的更新说明](https://github.com/northsea4/mdcx-docker/blob/dev/docs/about-new-src.md)。
 

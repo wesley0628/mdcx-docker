@@ -400,8 +400,8 @@ fetch_release_info() {
 #   "tag_name": "220260324",
 #   "published_at": "2026-03-24T03:49:18Z",
 #   "release_version": "d20260324",
-#   "tar_url": "https://api.github.com/repos/Hazard804/mdcx/tarball/220260324",
-#   "zip_url": "https://api.github.com/repos/Hazard804/mdcx/zipball/220260324"
+#   "tar_url": "https://api.github.com/repos/sqzw-x/mdcx/tarball/daily_release",
+#   "zip_url": "https://api.github.com/repos/sqzw-x/mdcx/zipball/daily_release"
 # }
 get_release_info() {
   local repo="$1"
@@ -460,7 +460,7 @@ get_release_info() {
 }
 
 download_src() {
-  local REPO="Hazard804/mdcx"
+  local REPO="sqzw-x/mdcx"
   local TAG_NAME="latest"
 
   local info=$(get_release_info "$REPO" "$TAG_NAME")

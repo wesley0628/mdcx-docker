@@ -239,7 +239,7 @@ else
   exit 1
 fi
 
-REPO="Hazard804/mdcx"
+REPO="sqzw-x/mdcx"
 TAG_NAME="${tagName}"
 
 info=$(get_release_info "$REPO" "$TAG_NAME")

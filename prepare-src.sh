@@ -4,7 +4,6 @@
 # 一般只用于构建镜像流程，普通用户可以忽略。
 # UPDATE 2023-12-24 17:08:03 使用新的源码仓库:https://github.com/sqzw-x/mdcx
 # UPDATE 2024-05-28 21:28:01 sqzw-x/mdcx目前基本只进行daily_release构建
-# UPDATE 2026-03-24 迁移到新仓库:https://github.com/Hazard804/mdcx
 
 # 检查是否有jq命令
 if ! command -v jq &> /dev/null
@@ -177,8 +176,8 @@ fetch_release_info() {
 #   "tag_name": "v1.0.0",
 #   "published_at": "2022-01-01T00:00:00Z",
 #   "release_version": "120220101",
-#   "tar_url": "https://api.github.com/repos/Hazard804/mdcx/tarball/220260324",
-#   "zip_url": "https://api.github.com/repos/Hazard804/mdcx/zipball/220260324"
+#   "tar_url": "https://api.github.com/repos/sqzw-x/mdcx/tarball/daily_release",
+#   "zip_url": "https://api.github.com/repos/sqzw-x/mdcx/zipball/daily_release"
 # }
 get_release_info() {
   local repo="$1"
@@ -238,7 +237,7 @@ get_release_info() {
   return 0
 }
 
-REPO="Hazard804/mdcx"
+REPO="sqzw-x/mdcx"
 TAG_NAME="${release_tag}"
 
 info=$(get_release_info "$REPO" "$TAG_NAME")
