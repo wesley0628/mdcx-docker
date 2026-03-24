@@ -4,6 +4,7 @@
 # 一般只用于构建镜像流程，普通用户可以忽略。
 # UPDATE 2023-12-24 17:08:03 使用新的源码仓库:https://github.com/sqzw-x/mdcx
 # UPDATE 2024-05-28 21:28:01 sqzw-x/mdcx目前基本只进行daily_release构建
+# UPDATE 2026-03-24 迁移到新仓库:https://github.com/Hazard804/mdcx
 
 # 检查是否有jq命令
 if ! command -v jq &> /dev/null
@@ -12,7 +13,7 @@ then
   exit 1
 fi
 
-release_tag="daily_release"
+release_tag="latest"
 
 while [[ $# -gt 0 ]]
 do
@@ -49,7 +50,7 @@ done
 if [[ -n "$help" ]]; then
   echo "用法: $0 [--context <context>] [--tag <release_tag>] [--verbose] [--dry]"
   echo "  --context <context>   指定源码解压目录，默认为当前目录"
-  echo "  --tag <release_tag>   指定要下载的版本标签，默认为'daily_release'"
+  echo "  --tag <release_tag>   指定要下载的版本标签，默认为'latest'"
   echo "  --verbose             显示详细的下载过程"
   echo "  --dry                 只进行检查，不实际下载"
   exit 0
@@ -176,8 +177,8 @@ fetch_release_info() {
 #   "tag_name": "v1.0.0",
 #   "published_at": "2022-01-01T00:00:00Z",
 #   "release_version": "120220101",
-#   "tar_url": "https://api.github.com/repos/sqzw-x/mdcx/tarball/daily_release",
-#   "zip_url": "https://api.github.com/repos/sqzw-x/mdcx/zipball/daily_release"
+#   "tar_url": "https://api.github.com/repos/Hazard804/mdcx/tarball/220260324",
+#   "zip_url": "https://api.github.com/repos/Hazard804/mdcx/zipball/220260324"
 # }
 get_release_info() {
   local repo="$1"
@@ -237,7 +238,7 @@ get_release_info() {
   return 0
 }
 
-REPO="sqzw-x/mdcx"
+REPO="Hazard804/mdcx"
 TAG_NAME="${release_tag}"
 
 info=$(get_release_info "$REPO" "$TAG_NAME")

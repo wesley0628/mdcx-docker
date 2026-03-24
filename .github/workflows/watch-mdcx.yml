@@ -14,7 +14,7 @@ on:
         type: boolean
 
 env:
-  RELEASE_URL: 'https://api.github.com/repos/sqzw-x/mdcx/releases/latest'
+  RELEASE_URL: 'https://api.github.com/repos/Hazard804/mdcx/releases/latest'
   ENABLE_WATCH: ${{ vars.ENABLE_WATCH_MDCX_RELEASE }}
   MDCX_TAG: ${{ vars.MDCX_TAG }}
   GITHUB_CURRENT_REPO: ${{ github.event.repository.name }}
@@ -63,7 +63,7 @@ jobs:
           VAR_VERSION="MDCX_LATEST_VERSION"
           VAR_TIME="MDCX_LATEST_TIME"
 
-          REPO="sqzw-x/mdcx"
+          REPO="Hazard804/mdcx"
           TAG_NAME="${{ env.MDCX_TAG || 'latest' }}"
 
           info=$(get_release_info "$REPO" "$TAG_NAME")
@@ -145,7 +145,7 @@ jobs:
             🎉 MDCx新版本！
             📦 新版本号：${{ steps.check.outputs.newVersion }}
             📅 更新时间：${{ steps.check.outputs.newTime }}
-            🔗 发布链接：https://github.com/sqzw-x/mdcx/releases/tag/latest
+            🔗 发布链接：https://github.com/Hazard804/mdcx/releases/tag/latest
       -
         name: TG Notification - For no new version
         uses: appleboy/telegram-action@master

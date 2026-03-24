@@ -33,7 +33,7 @@ appVersion=0
 appPath="/app"
 
 # release tag
-tagName="daily_release"
+tagName="latest"
 
 while [[ $# -gt 0 ]]
 do
@@ -74,7 +74,7 @@ if [ -n "$help" ]; then
   echo ""
   echo "参数说明："
   echo "--src, --path, -p         指定源码存放目录，默认 ./app"
-  echo "--tag                     指定要更新的版本标签，默认daily_release"
+  echo "--tag                     指定要更新的版本标签，默认latest"
   echo "--dry                     只检查，不更新"
   echo "-h, --help                显示帮助信息"
   exit 0
@@ -96,11 +96,9 @@ find_release_by_tag_name() {
   
   local url="https://api.github.com/repos/${repo}/releases"
 
-  # echo "URL: $url"
-
   local target_release=""
 
-  let found=false
+  local found=false
   local page=1
   while true; do
     local response=$(curl -s "${url}?per_page=100&page=${page}")
@@ -108,74 +106,107 @@ find_release_by_tag_name() {
       break
     fi
 
-    local releases=$(printf '%s' $response | jq -c '.[]')
-    for release in $releases; do
-      tag_name=$(printf '%s' $release | jq -r '.tag_name')
-      if [[ "$tag_name" == "$target_tag_name" ]]; then
-        found=true
-        echo $release
-        break
-      fi
-    done
+    local array_size=$(printf '%s' "$response" | jq 'length')
+    if [[ "$array_size" == "0" ]]; then
+      break
+    fi
 
-    if [[ $found ]]; then
+    local temp_file=$(mktemp)
+    printf '%s' "$response" > "$temp_file"
+
+    local matched_release=$(cat "$temp_file" | jq -c --arg tag "$target_tag_name" '.[] | select(.tag_name == $tag)')
+    rm -f "$temp_file"
+
+    if [[ -n "$matched_release" ]]; then
+      printf '%s' "$matched_release"
+      found=true
       break
     fi
 
     page=$((page + 1))
   done
+
+  if [[ "$found" == "false" ]]; then
+    return 1
+  fi
+}
+
+fetch_release_info() {
+  local repo="$1"
+  local tag_name="$2"
+
+  local temp_file=$(mktemp)
+
+  local url="https://api.github.com/repos/${repo}/releases/tags/${tag_name}"
+
+  if [[ "$tag_name" == "latest" ]]; then
+    url="https://api.github.com/repos/${repo}/releases/latest"
+  fi
+
+  curl -s "${url}" > "$temp_file"
+  if [[ ! -s "$temp_file" ]]; then
+    rm -f "$temp_file"
+    echo "❌ 无法获取release信息！"
+    return 1
+  fi
+
+  local message=$(cat "$temp_file" | jq -r '.message // empty' 2>/dev/null)
+  if [[ -n "$message" ]]; then
+    rm -f "$temp_file"
+    echo "❌ API错误：$message"
+    return 1
+  fi
+
+  cat "$temp_file" | jq -c '.'
+  rm -f "$temp_file"
+  return 0
 }
 
 # 获取指定仓库和tag_name的release，并解析得到release信息
-# 返回json对象:
-# {
-#   "tag_name": "v1.0.0",
-#   "published_at": "2022-01-01T00:00:00Z",
-#   "release_version": "120220101",
-#   "tar_url": "https://api.github.com/repos/sqzw-x/mdcx/tarball/daily_release",
-#   "zip_url": "https://api.github.com/repos/sqzw-x/mdcx/zipball/daily_release"
-# }
 get_release_info() {
   local repo="$1"
   local tag_name="$2"
 
-  # echo "⏳ 正在获取仓库 ${repo} 中 tag_name=${tag_name} 的release..."
-  local release=$(find_release_by_tag_name "$repo" "$tag_name")
+  local release=""
+
+  release=$(fetch_release_info "$repo" "$tag_name")
+  if [[ $? -ne 0 || -z "$release" ]]; then
+    release=$(find_release_by_tag_name "$repo" "$tag_name")
+  fi
 
   if [[ -z "$release" ]]; then
     echo "❌ 找不到 tag_name=${tag_name} 的release！"
     return 1
   fi
 
-  tag_name=$(printf '%s' $release | jq -r '.tag_name')
-  if [[ -z "$tag_name" ]]; then
+  local tag_name_from_json=$(printf '%s' "$release" | jq -r '.tag_name')
+  if [[ -z "$tag_name_from_json" || "$tag_name_from_json" == "null" ]]; then
     echo "❌ 找不到 tag_name！"
     return 1
   fi
 
-  published_at=$(printf '%s' $release | jq -r '.published_at')
-  if [[ -z "$published_at" ]]; then
+  published_at=$(printf '%s' "$release" | jq -r '.published_at')
+  if [[ -z "$published_at" || "$published_at" == "null" ]]; then
     echo "❌ 找不到 published_at！"
     return 1
   fi
 
   release_version=$(generate_app_version "$published_at")
 
-  tar_url=$(printf '%s' $release | jq -r '.tarball_url')
-  if [[ -z "$tar_url" ]]; then
+  tar_url=$(printf '%s' "$release" | jq -r '.tarball_url')
+  if [[ -z "$tar_url" || "$tar_url" == "null" ]]; then
     echo "❌ 从请求结果获取源码压缩包文件下载链接失败！"
     return 1
   fi
 
-  zip_url=$(printf '%s' $release | jq -r '.zipball_url')
-  if [[ -z "$zip_url" ]]; then
+  zip_url=$(printf '%s' "$release" | jq -r '.zipball_url')
+  if [[ -z "$zip_url" || "$zip_url" == "null" ]]; then
     echo "❌ 从请求结果获取源码压缩包文件下载链接失败！"
     return 1
   fi
 
-  # 构建一个json对象
   local data="{
-    \"tag_name\": \"${tag_name}\",
+    \"tag_name\": \"${tag_name_from_json}\",
     \"published_at\": \"${published_at}\",
     \"release_version\": \"${release_version}\",
     \"tar_url\": \"${tar_url}\",
@@ -199,7 +230,7 @@ else
   exit 1
 fi
 
-REPO="sqzw-x/mdcx"
+REPO="Hazard804/mdcx"
 TAG_NAME="${tagName}"
 
 info=$(get_release_info "$REPO" "$TAG_NAME")
